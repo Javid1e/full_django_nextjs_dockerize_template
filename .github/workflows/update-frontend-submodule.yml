@@ -21,38 +21,25 @@ jobs:
         git config --global user.name 'github-actions[bot]'
         git config --global user.email 'github-actions[bot]@users.noreply.github.com'
 
-    - name: Save Current Submodule Status
-      id: current-status
-      run: git submodule status > current_submodule_status.txt
-
-    - name: Update Submodules
-      run: git submodule update --remote --merge
-
-    - name: Save Updated Submodule Status
-      id: updated-status
-      run: git submodule status > updated_submodule_status.txt
-
-    - name: Check for Changes
-      id: check-changes
+    - name: Update Submodule
       run: |
-        CHANGED_SUBMODULES=$(diff current_submodule_status.txt updated_submodule_status.txt | grep -E '^\+|^\-' | sed 's/^.\{1\}//' | awk '{print $2}')
-        if [ -z "$CHANGED_SUBMODULES" ]; then
-          echo "No submodule changes detected."
-          exit 0
-        fi
-        echo "CHANGES=$CHANGED_SUBMODULES" >> $GITHUB_ENV
+        cd frontend
+        git fetch origin
+        git merge origin/main --allow-unrelated-histories
 
     - name: Commit and Push Changes
-      if: env.CHANGES != ''
       run: |
-        git add .
-        git commit -m "Update frontend submodule: ${{ env.CHANGES }}"
-        git push origin frontend
+        cd frontend
+        if [ -n "$(git status --porcelain)" ]; then
+          git add .
+          git commit -m "Update frontend submodule"
+          git push origin frontend
+        fi
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Create Pull Request to Main
-      if: env.CHANGES != ''
+      if: always()
       uses: peter-evans/create-pull-request@v3
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
