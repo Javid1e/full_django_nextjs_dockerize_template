@@ -21,10 +21,19 @@ jobs:
         git config --global user.name 'github-actions[bot]'
         git config --global user.email 'github-actions[bot]@users.noreply.github.com'
 
-    - name: Sync Submodules
+    - name: Sync and Update Submodules
       run: |
         git submodule sync
         git submodule update --init --recursive --remote --merge
+
+    - name: Handle Submodule Commit Mismatches
+      run: |
+        for module in $(git config --file .gitmodules --get-regexp path | awk '{ print $2 }'); do
+          cd $module
+          git fetch origin
+          git reset --hard origin/main
+          cd -
+        done
 
     - name: Commit and Push Changes
       run: |
