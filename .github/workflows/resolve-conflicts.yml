@@ -1,0 +1,34 @@
+name: Resolve Conflicts
+
+on:
+  push:
+    branches:
+      - frontend
+      - backend
+      - dockerize
+  workflow_dispatch:
+
+jobs:
+  resolve-conflicts:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+      with:
+        submodules: true
+
+    - name: Configure Git
+      run: |
+        git config --global user.name 'github-actions[bot]'
+        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+
+    - name: Resolve Conflicts
+      run: |
+        git fetch origin
+        git merge origin/main --allow-unrelated-histories || true
+        git add .
+        git commit -m "Resolve merge conflicts"
+        git push origin ${{ github.ref_name }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.SECRET }}

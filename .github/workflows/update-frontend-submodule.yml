@@ -21,15 +21,13 @@ jobs:
         git config --global user.name 'github-actions[bot]'
         git config --global user.email 'github-actions[bot]@users.noreply.github.com'
 
-    - name: Update Submodule
+    - name: Sync Submodules
       run: |
-        cd frontend
-        git fetch origin
-        git merge origin/main --allow-unrelated-histories
+        git submodule sync
+        git submodule update --init --recursive --remote --merge
 
     - name: Commit and Push Changes
       run: |
-        cd frontend
         if [ -n "$(git status --porcelain)" ]; then
           git add .
           git commit -m "Update frontend submodule"
@@ -39,7 +37,6 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.SECRET }}
 
     - name: Create Pull Request to Main
-      if: always()
       uses: peter-evans/create-pull-request@v5
       with:
         token: ${{ secrets.SECRET }}
