@@ -26,12 +26,13 @@ jobs:
         git submodule sync
         git submodule update --init --recursive --remote --merge
 
-    - name: Handle Submodule Commit Mismatches
+    - name: Fetch and Reset Submodules to Valid Commits
       run: |
         for module in $(git config --file .gitmodules --get-regexp path | awk '{ print $2 }'); do
           cd $module
           git fetch origin
-          git reset --hard origin/main
+          latest_commit=$(git rev-parse origin/main)
+          git reset --hard $latest_commit
           cd -
         done
 
