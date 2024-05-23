@@ -23,6 +23,21 @@ jobs:
         git config --global user.name 'github-actions[bot]'
         git config --global user.email 'github-actions[bot]@users.noreply.github.com'
 
+    - name: Sync and Update Submodules
+      run: |
+        git submodule sync
+        git submodule update --init --recursive --remote --merge || true
+
+    - name: Fetch and Reset Submodules to Valid Commits
+      run: |
+        for module in $(git config --file .gitmodules --get-regexp path | awk '{ print $2 }'); do
+          cd $module
+          git fetch origin
+          latest_commit=$(git log origin/main --pretty=format:"%H" | head -n 1)
+          git reset --hard $latest_commit
+          cd -
+        done
+
     - name: Resolve Conflicts
       run: |
         git fetch origin
