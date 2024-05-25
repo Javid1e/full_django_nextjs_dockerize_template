@@ -8,7 +8,7 @@ NEW_FRONTEND_REPO_URL=$4
 NEW_DOCKERIZE_REPO_URL=$5
 
 # کلون کردن مخزن قالب به همراه submoduleها
-git clone --recurse-submodules . $NEW_PROJECT_DIR
+git clone --recurse-submodules <URL_OF_YOUR_TEMPLATE_REPOSITORY> $NEW_PROJECT_DIR
 cd $NEW_PROJECT_DIR
 
 # تغییر remote مخزن اصلی به مخزن جدید
@@ -35,7 +35,7 @@ git add .
 git commit -m "Initialize new project with submodules"
 git push -u origin main
 
-# push کردن submodule ها به مخازن جدید
+# push کردن submoduleها به مخازن جدید
 cd backend
 git push -u origin main
 cd ..
