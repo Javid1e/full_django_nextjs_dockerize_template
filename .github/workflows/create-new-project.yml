@@ -31,5 +31,5 @@ jobs:
 
     - name: Run Setup Script
       run: |
-        chmod +x setup_new_project.sh
-        ./setup_new_project.sh ${{ github.event.inputs.new_project_dir }} ${{ github.event.inputs.new_main_repo_url }} ${{ github.event.inputs.new_backend_repo_url }} ${{ github.event.inputs.new_frontend_repo_url }} ${{ github.event.inputs.new_dockerize_repo_url }}
+        chmod +x config/setup_new_project.sh
+        ./config/setup_new_project.sh ${{ github.event.inputs.new_project_dir }} ${{ github.event.inputs.new_main_repo_url }} ${{ github.event.inputs.new_backend_repo_url }} ${{ github.event.inputs.new_frontend_repo_url }} ${{ github.event.inputs.new_dockerize_repo_url }}
