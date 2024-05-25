@@ -3,20 +3,8 @@ name: Create New Project
 on:
   workflow_dispatch:
     inputs:
-      new_project_dir:
-        description: 'New project directory'
-        required: true
-      new_main_repo_url:
-        description: 'URL of the new main repository'
-        required: true
-      new_backend_repo_url:
-        description: 'URL of the new backend repository'
-        required: true
-      new_frontend_repo_url:
-        description: 'URL of the new frontend repository'
-        required: true
-      new_dockerize_repo_url:
-        description: 'URL of the new dockerize repository'
+      project_name:
+        description: 'Name of the new project'
         required: true
 
 jobs:
@@ -24,12 +12,68 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout Repository
+    - name: Checkout Template Repository
       uses: actions/checkout@v3
       with:
         submodules: true
 
-    - name: Run Setup Script
+    - name: Set up SSH
       run: |
-        chmod +x config/setup_new_project.sh
-        ./config/setup_new_project.sh ${{ github.event.inputs.new_project_dir }} ${{ github.event.inputs.new_main_repo_url }} ${{ github.event.inputs.new_backend_repo_url }} ${{ github.event.inputs.new_frontend_repo_url }} ${{ github.event.inputs.new_dockerize_repo_url }}
+        mkdir -p ~/.ssh
+        echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan github.com >> ~/.ssh/known_hosts
+
+    - name: Create New Project
+      run: |
+        # تنظیم متغیرها
+        PROJECT_NAME=${{ github.event.inputs.project_name }}
+        MAIN_REPO_URL="git@github.com:Javid1e/${PROJECT_NAME}.git"
+        BACKEND_REPO_URL="git@github.com:Javid1e/${PROJECT_NAME}_backend.git"
+        FRONTEND_REPO_URL="git@github.com:Javid1e/${PROJECT_NAME}_frontend.git"
+        DOCKERIZE_REPO_URL="git@github.com:Javid1e/${PROJECT_NAME}_dockerize.git"
+        
+        NEW_PROJECT_DIR=$PROJECT_NAME
+
+        # کلون کردن مخزن قالب به همراه submodule‌ها
+        git clone --recurse-submodules git@github.com:Javid1e/full_django_nextjs_dockerize_template.git $NEW_PROJECT_DIR
+        cd $NEW_PROJECT_DIR
+
+        # تغییر remote مخزن اصلی به مخزن جدید
+        git remote set-url origin $MAIN_REPO_URL
+
+        # تنظیم URLهای submodule به مخازن جدید
+        cd backend
+        git remote set-url origin $BACKEND_REPO_URL
+        cd ..
+
+        cd frontend
+        git remote set-url origin $FRONTEND_REPO_URL
+        cd ..
+
+        cd dockerize
+        git remote set-url origin $DOCKERIZE_REPO_URL
+        cd ..
+
+        # بازگشت به دایرکتوری اصلی
+        cd ..
+
+        # افزودن تغییرات به مخزن جدید
+        git add .
+        git commit -m "Initialize new project with submodules"
+        git push -u origin main
+
+        # push کردن submodule‌ها به مخازن جدید
+        cd backend
+        git push -u origin main
+        cd ..
+
+        cd frontend
+        git push -u origin main
+        cd ..
+
+        cd dockerize
+        git push -u origin main
+        cd ..
+    env:
+      SSH_PRIVATE_KEY: ${{ secrets.SECRET }}
