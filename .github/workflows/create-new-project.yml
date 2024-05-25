@@ -20,7 +20,7 @@ jobs:
     - name: Set up SSH
       run: |
         mkdir -p ~/.ssh
-        echo "$SSH_SECRET" > ~/.ssh/id_rsa
+        echo "$SSH_sbs2" > ~/.ssh/id_rsa
         chmod 600 ~/.ssh/id_rsa
         ssh-keyscan github.com >> ~/.ssh/known_hosts
 
@@ -76,4 +76,4 @@ jobs:
         git push -u origin main
         cd ..
     env:
-      SSH_PRIVATE_KEY: ${{ secrets.SECRET }}
+      SSH_PRIVATE_KEY: ${{ secrets.sbs2 }}
