@@ -1,0 +1,35 @@
+name: Create New Project
+
+on:
+  workflow_dispatch:
+    inputs:
+      new_project_dir:
+        description: 'New project directory'
+        required: true
+      new_main_repo_url:
+        description: 'URL of the new main repository'
+        required: true
+      new_backend_repo_url:
+        description: 'URL of the new backend repository'
+        required: true
+      new_frontend_repo_url:
+        description: 'URL of the new frontend repository'
+        required: true
+      new_dockerize_repo_url:
+        description: 'URL of the new dockerize repository'
+        required: true
+
+jobs:
+  create-project:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+      with:
+        submodules: true
+
+    - name: Run Setup Script
+      run: |
+        chmod +x setup_new_project.sh
+        ./setup_new_project.sh ${{ github.event.inputs.new_project_dir }} ${{ github.event.inputs.new_main_repo_url }} ${{ github.event.inputs.new_backend_repo_url }} ${{ github.event.inputs.new_frontend_repo_url }} ${{ github.event.inputs.new_dockerize_repo_url }}
