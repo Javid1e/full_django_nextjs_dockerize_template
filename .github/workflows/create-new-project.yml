@@ -54,28 +54,21 @@ jobs:
         git clone --recurse-submodules https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/Javid1e/full_django_nextjs_dockerize_template.git $new_project_dir
         cd $new_project_dir
 
-        # Set new remotes
+        # Set new remotes for the main project
         git remote set-url origin $main_repo_url
 
-        cd backend
-        git remote set-url origin $backend_repo_url
-        cd ..
+        # Set new remotes for submodules
+        git submodule set-url backend $backend_repo_url
+        git submodule set-url frontend $frontend_repo_url
+        git submodule set-url dockerize $dockerize_repo_url
+        git submodule update --init --recursive
 
-        cd frontend
-        git remote set-url origin $frontend_repo_url
-        cd ..
-
-        cd dockerize
-        git remote set-url origin $dockerize_repo_url
-        cd ..
-
-        cd ..
-
-        # Push changes to new repositories
+        # Commit and push changes to the new repositories
         git add .
         git commit -m "Initialize new project with submodules"
         git push -u origin main
 
+        # Push submodule changes
         cd backend
         git push -u origin main
         cd ..
