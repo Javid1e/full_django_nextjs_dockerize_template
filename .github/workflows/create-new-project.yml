@@ -12,6 +12,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+
     - name: Create Repositories
       id: create_repos
       run: |
@@ -29,26 +32,33 @@ jobs:
         curl -H "Authorization: token ${{ secrets.GB_TOKEN }}" https://api.github.com/user/repos -d "{\"name\":\"${project_name}_frontend\", \"private\": false}"
         curl -H "Authorization: token ${{ secrets.GB_TOKEN }}" https://api.github.com/user/repos -d "{\"name\":\"${project_name}_dockerize\", \"private\": false}"
 
+    - name: Configure SSH
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan github.com >> ~/.ssh/known_hosts
+
     - name: Configure Git
       run: |
         git config --global user.name "GitHub Action"
         git config --global user.email "action@github.com"
-        git config --global url."https://x-access-token:${{ secrets.GB_TOKEN }}@github.com/".insteadOf "https://github.com/"
+        git config --global url."git@github.com:".insteadOf "https://github.com/"
 
     - name: Initialize New Project
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GB_TOKEN }}
       run: |
         project_name="${{ github.event.inputs.project_name }}"
-        main_repo_url="https://x-access-token:${{ secrets.GB_TOKEN }}@github.com/Javid1e/${project_name}.git"
-        backend_repo_url="https://x-access-token:${{ secrets.GB_TOKEN }}@github.com/Javid1e/${project_name}_backend.git"
-        frontend_repo_url="https://x-access-token:${{ secrets.GB_TOKEN }}@github.com/Javid1e/${project_name}_frontend.git"
-        dockerize_repo_url="https://x-access-token:${{ secrets.GB_TOKEN }}@github.com/Javid1e/${project_name}_dockerize.git"
+        main_repo_url="git@github.com:Javid1e/${project_name}.git"
+        backend_repo_url="git@github.com:Javid1e/${project_name}_backend.git"
+        frontend_repo_url="git@github.com:Javid1e/${project_name}_frontend.git"
+        dockerize_repo_url="git@github.com:Javid1e/${project_name}_dockerize.git"
 
         new_project_dir=$project_name
 
         # Clone template repository with authentication
-        git clone --recurse-submodules https://x-access-token:${{ secrets.GB_TOKEN }}@github.com/Javid1e/full_django_nextjs_dockerize_template.git $new_project_dir
+        git clone --recurse-submodules git@github.com:Javid1e/full_django_nextjs_dockerize_template.git $new_project_dir
         cd $new_project_dir
 
         # Set new remotes for the main project
@@ -66,14 +76,12 @@ jobs:
         git push -u origin main
 
     - name: Setup Frontend Branch
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         cd $new_project_dir
         git checkout -b frontend
         git submodule update --init --recursive
         cd frontend
-        git remote set-url origin "https://x-access-token:${{ secrets.GB_TOKEN }}@github.com/Javid1e/${project_name}_frontend.git"
+        git remote set-url origin "git@github.com:Javid1e/${project_name}_frontend.git"
         git push -u origin main
         cd ..
         git add .
@@ -81,14 +89,12 @@ jobs:
         git push origin frontend
 
     - name: Setup Backend Branch
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         cd $new_project_dir
         git checkout -b backend
         git submodule update --init --recursive
         cd backend
-        git remote set-url origin "https://x-access-token:${{ secrets.GB_TOKEN }}@github.com/Javid1e/${project_name}_backend.git"
+        git remote set-url origin "git@github.com:Javid1e/${project_name}_backend.git"
         git push -u origin main
         cd ..
         git add .
@@ -96,14 +102,12 @@ jobs:
         git push origin backend
 
     - name: Setup Dockerize Branch
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         cd $new_project_dir
         git checkout -b dockerize
         git submodule update --init --recursive
         cd dockerize
-        git remote set-url origin "https://x-access-token:${{ secrets.GB_TOKEN }}@github.com/Javid1e/${project_name}_dockerize.git"
+        git remote set-url origin "git@github.com:Javid1e/${project_name}_dockerize.git"
         git push -u origin main
         cd ..
         git add .
