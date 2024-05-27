@@ -15,7 +15,7 @@ jobs:
     - name: Set up SSH
       run: |
         mkdir -p ~/.ssh
-        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+        echo "${{ secrets.SECRET }}" > ~/.ssh/id_rsa
         chmod 600 ~/.ssh/id_rsa
         ssh-keyscan github.com >> ~/.ssh/known_hosts
 
@@ -88,4 +88,4 @@ jobs:
         cd ..
     env:
       GH_TOKEN: ${{ secrets.GH_TOKEN }}
-      SSH_PRIVATE_KEY: ${{ secrets.SECRET}}
+      SSH_PRIVATE_KEY: ${{ secrets.SECRET }}
