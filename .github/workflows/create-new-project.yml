@@ -12,58 +12,69 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    - name: Set up SSH
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan github.com >> ~/.ssh/known_hosts
+
+    - name: Create Repositories
+      id: create_repos
+      run: |
+        project_name="${{ github.event.inputs.project_name }}"
+        main_repo="Javid1e/${project_name}"
+        backend_repo="Javid1e/${project_name}_backend"
+        frontend_repo="Javid1e/${project_name}_frontend"
+        dockerize_repo="Javid1e/${project_name}_dockerize"
+
+        # Create repositories using GitHub API
+        curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" https://api.github.com/user/repos -d "{\"name\":\"${project_name}\"}"
+        curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" https://api.github.com/user/repos -d "{\"name\":\"${project_name}_backend\"}"
+        curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" https://api.github.com/user/repos -d "{\"name\":\"${project_name}_frontend\"}"
+        curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" https://api.github.com/user/repos -d "{\"name\":\"${project_name}_dockerize\"}"
+
     - name: Checkout Template Repository
       uses: actions/checkout@v3
       with:
         submodules: true
 
-    - name: Set up SSH
+    - name: Initialize New Project
       run: |
-        mkdir -p ~/.ssh
-        echo "$SSH_sbs2" > ~/.ssh/id_rsa
-        chmod 600 ~/.ssh/id_rsa
-        ssh-keyscan github.com >> ~/.ssh/known_hosts
+        project_name="${{ github.event.inputs.project_name }}"
+        main_repo_url="git@github.com:Javid1e/${project_name}.git"
+        backend_repo_url="git@github.com:Javid1e/${project_name}_backend.git"
+        frontend_repo_url="git@github.com:Javid1e/${project_name}_frontend.git"
+        dockerize_repo_url="git@github.com:Javid1e/${project_name}_dockerize.git"
 
-    - name: Create New Project
-      run: |
-        # تنظیم متغیرها
-        PROJECT_NAME=${{ github.event.inputs.project_name }}
-        MAIN_REPO_URL="git@github.com:Javid1e/${PROJECT_NAME}.git"
-        BACKEND_REPO_URL="git@github.com:Javid1e/${PROJECT_NAME}_backend.git"
-        FRONTEND_REPO_URL="git@github.com:Javid1e/${PROJECT_NAME}_frontend.git"
-        DOCKERIZE_REPO_URL="git@github.com:Javid1e/${PROJECT_NAME}_dockerize.git"
-        
-        NEW_PROJECT_DIR=$PROJECT_NAME
+        new_project_dir=$project_name
 
-        # کلون کردن مخزن قالب به همراه submodule‌ها
-        git clone --recurse-submodules git@github.com:Javid1e/full_django_nextjs_dockerize_template.git $NEW_PROJECT_DIR
-        cd $NEW_PROJECT_DIR
+        # Clone template repository
+        git clone --recurse-submodules git@github.com:Javid1e/full_django_nextjs_dockerize_template.git $new_project_dir
+        cd $new_project_dir
 
-        # تغییر remote مخزن اصلی به مخزن جدید
-        git remote set-url origin $MAIN_REPO_URL
+        # Set new remotes
+        git remote set-url origin $main_repo_url
 
-        # تنظیم URLهای submodule به مخازن جدید
         cd backend
-        git remote set-url origin $BACKEND_REPO_URL
+        git remote set-url origin $backend_repo_url
         cd ..
 
         cd frontend
-        git remote set-url origin $FRONTEND_REPO_URL
+        git remote set-url origin $frontend_repo_url
         cd ..
 
         cd dockerize
-        git remote set-url origin $DOCKERIZE_REPO_URL
+        git remote set-url origin $dockerize_repo_url
         cd ..
 
-        # بازگشت به دایرکتوری اصلی
         cd ..
 
-        # افزودن تغییرات به مخزن جدید
+        # Push changes to new repositories
         git add .
         git commit -m "Initialize new project with submodules"
         git push -u origin main
 
-        # push کردن submodule‌ها به مخازن جدید
         cd backend
         git push -u origin main
         cd ..
@@ -76,4 +87,5 @@ jobs:
         git push -u origin main
         cd ..
     env:
-      SSH_PRIVATE_KEY: ${{ secrets.sbs2 }}
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
+      SSH_PRIVATE_KEY: ${{ secrets.SECRET}}
