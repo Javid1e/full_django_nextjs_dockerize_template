@@ -17,7 +17,6 @@ jobs:
       with:
         token: ${{ secrets.GH_TOKEN }}
         submodules: true
-        submodule_token: ${{ secrets.GH_TOKEN }}
 
     - name: Create Repositories
       id: create_repos
@@ -64,28 +63,20 @@ jobs:
         git submodule set-url dockerize $dockerize_repo_url
         git submodule update --init --recursive
 
-        # Commit changes to the main repository
+        # Commit and push changes to the new repositories
         git add .
         git commit -m "Initialize new project with submodules"
-
-        # Configure submodule authentication
-        git config --global url."https://x-access-token:${GH_TOKEN}@github.com/".insteadOf "https://github.com/"
-
-        # Push changes to the main repository
         git push -u origin main
 
         # Push submodule changes
         cd backend
-        git remote set-url origin "https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/Javid1e/${project_name}_backend.git"
         git push -u origin main
         cd ..
 
         cd frontend
-        git remote set-url origin "https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/Javid1e/${project_name}_frontend.git"
         git push -u origin main
         cd ..
 
         cd dockerize
-        git remote set-url origin "https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/Javid1e/${project_name}_dockerize.git"
         git push -u origin main
         cd ..
