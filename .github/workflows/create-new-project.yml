@@ -33,6 +33,11 @@ jobs:
         curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" https://api.github.com/user/repos -d "{\"name\":\"${project_name}_frontend\"}"
         curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" https://api.github.com/user/repos -d "{\"name\":\"${project_name}_dockerize\"}"
 
+    - name: Configure Git
+      run: |
+        git config --global user.name "GitHub Action"
+        git config --global user.email "action@github.com"
+
     - name: Initialize New Project
       env:
         GH_TOKEN: ${{ secrets.GH_TOKEN }}
