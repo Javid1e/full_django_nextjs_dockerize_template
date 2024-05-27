@@ -57,13 +57,13 @@ jobs:
         # Set new remotes for the main project
         git remote set-url origin $main_repo_url
 
-        # Set new remotes for submodules
+        # Set new remotes for submodules without including tokens
         git submodule set-url backend $backend_repo_url
         git submodule set-url frontend $frontend_repo_url
         git submodule set-url dockerize $dockerize_repo_url
         git submodule update --init --recursive
 
-        # Commit and push changes to the new repositories
+        # Commit changes to the main repository
         git add .
         git commit -m "Initialize new project with submodules"
 
