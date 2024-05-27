@@ -43,15 +43,15 @@ jobs:
         GH_TOKEN: ${{ secrets.GH_TOKEN }}
       run: |
         project_name="${{ github.event.inputs.project_name }}"
-        main_repo_url="https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/Javid1e/${project_name}.git"
-        backend_repo_url="https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/Javid1e/${project_name}_backend.git"
-        frontend_repo_url="https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/Javid1e/${project_name}_frontend.git"
-        dockerize_repo_url="https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/Javid1e/${project_name}_dockerize.git"
+        main_repo_url="https://github.com/Javid1e/${project_name}.git"
+        backend_repo_url="https://github.com/Javid1e/${project_name}_backend.git"
+        frontend_repo_url="https://github.com/Javid1e/${project_name}_frontend.git"
+        dockerize_repo_url="https://github.com/Javid1e/${project_name}_dockerize.git"
 
         new_project_dir=$project_name
 
         # Clone template repository
-        git clone --recurse-submodules https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/Javid1e/full_django_nextjs_dockerize_template.git $new_project_dir
+        git clone --recurse-submodules https://github.com/Javid1e/full_django_nextjs_dockerize_template.git $new_project_dir
         cd $new_project_dir
 
         # Set new remotes for the main project
@@ -70,13 +70,16 @@ jobs:
 
         # Push submodule changes
         cd backend
+        git remote set-url origin "https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/Javid1e/${project_name}_backend.git"
         git push -u origin main
         cd ..
 
         cd frontend
+        git remote set-url origin "https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/Javid1e/${project_name}_frontend.git"
         git push -u origin main
         cd ..
 
         cd dockerize
+        git remote set-url origin "https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/Javid1e/${project_name}_dockerize.git"
         git push -u origin main
         cd ..
