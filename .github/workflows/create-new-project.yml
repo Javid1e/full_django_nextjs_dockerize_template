@@ -17,6 +17,7 @@ jobs:
       with:
         token: ${{ secrets.GH_TOKEN }}
         submodules: true
+        persist-credentials: false # Add this line to prevent the use of default GITHUB_TOKEN
 
     - name: Create Repositories
       id: create_repos
