@@ -1,0 +1,56 @@
+name: Update Dockerize Submodule
+
+on:
+  push:
+    branches:
+      - dockerize
+  workflow_dispatch:
+
+jobs:
+  update-submodule:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+      with:
+        submodules: true
+
+    - name: Configure Git
+      run: |
+        git config --global user.name 'github-actions[bot]'
+        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+
+    - name: Sync and Update Submodules
+      run: |
+        git submodule sync
+        git submodule update --init --recursive --remote --merge
+
+    - name: Fetch and Reset Submodules to Valid Commits
+      run: |
+        for module in $(git config --file .gitmodules --get-regexp path | awk '{ print $2 }'); do
+          cd $module
+          git fetch origin
+          latest_commit=$(git rev-parse origin/main)
+          git reset --hard $latest_commit
+          cd -
+        done
+
+    - name: Commit and Push Changes
+      run: |
+        if [ -n "$(git status --porcelain)" ]; then
+          git add .
+          git commit -m "Update dockerize submodule"
+          git push origin dockerize
+        fi
+      env:
+        GITHUB_TOKEN: ${{ secrets.SECRET }}
+
+    - name: Create Pull Request to Main
+      uses: peter-evans/create-pull-request@v5
+      with:
+        token: ${{ secrets.SECRET }}
+        branch: dockerize
+        base: main
+        title: "Update dockerize submodule"
+        body: "This PR updates the dockerize submodule with the latest changes."
