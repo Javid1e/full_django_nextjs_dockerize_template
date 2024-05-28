@@ -16,21 +16,31 @@ jobs:
 
       - name: Create new repository
         id: create_repo
-        uses: peter-evans/create-or-update-repo@v1
+        uses: actions/github-script@v6
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          repository: javid1e/${{ github.event.inputs.project_name }}
-          private: false
-          description: 'Repository for ${{ github.event.inputs.project_name }}'
+          script: |
+            const octokit = github.getOctokit(process.env.PAT);
+            const { data } = await octokit.rest.repos.createForAuthenticatedUser({
+              name: github.event.inputs.project_name,
+              private: true,
+              description: `Repository for ${github.event.inputs.project_name}`
+            });
+            core.setOutput('repo_clone_url', data.clone_url);
+        env:
+          PAT: ${{ secrets.PAT }}
 
       - name: Set up git
         run: |
           git config --global user.email "abdollah.promail@gmail.com"
           git config --global user.name "Abdollah Mohebbi"
 
+      - name: Clone the new repository
+        run: |
+          git clone ${{ steps.create_repo.outputs.repo_clone_url }} ${{ github.event.inputs.project_name }}
+          cd ${{ github.event.inputs.project_name }}
+
       - name: Add frontend submodule
         run: |
-          git clone https://github.com/javid1e/${{ github.event.inputs.project_name }}.git
           cd ${{ github.event.inputs.project_name }}
           git checkout -b frontend
           git submodule add -b frontend https://github.com/javid1e/full_frontend_nextjs_shadcn_template.git ${{ github.event.inputs.project_name }}_frontend
