@@ -11,23 +11,16 @@ jobs:
   create-repo:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-
       - name: Create new repository
         id: create_repo
-        uses: actions/github-script@v6
+        uses: octokit/request-action@v2.x
         with:
-          script: |
-            const octokit = github.getOctokit(process.env.PAT);
-            const { data } = await octokit.rest.repos.createForAuthenticatedUser({
-              name: github.event.inputs.project_name,
-              private: true,
-              description: `Repository for ${github.event.inputs.project_name}`
-            });
-            core.setOutput('repo_clone_url', data.clone_url);
+          route: POST /user/repos
+          name: ${{ github.event.inputs.project_name }}
+          private: true
+          description: 'Repository for ${{ github.event.inputs.project_name }}'
         env:
-          PAT: ${{ secrets.PAT }}
+          GITHUB_TOKEN: ${{ secrets.PAT }}
 
       - name: Set up git
         run: |
@@ -36,7 +29,7 @@ jobs:
 
       - name: Clone the new repository
         run: |
-          git clone ${{ steps.create_repo.outputs.repo_clone_url }} ${{ github.event.inputs.project_name }}
+          git clone https://github.com/javid1e/${{ github.event.inputs.project_name }}.git
           cd ${{ github.event.inputs.project_name }}
 
       - name: Add frontend submodule
