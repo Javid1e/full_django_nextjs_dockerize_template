@@ -1,9 +1,0 @@
-[submodule "frontend"]
-	path = frontend
-	url = https://github.com/Javid1e/full_frontend_nextjs_nextui_template.git
-[submodule "backend"]
-	path = backend
-	url = https://github.com/Javid1e/full_backend_django_rest_template.git
-[submodule "dockerize"]
-	path = dockerize
-	url = https://github.com/Javid1e/full_dockerize_django_nextjs_template.git
