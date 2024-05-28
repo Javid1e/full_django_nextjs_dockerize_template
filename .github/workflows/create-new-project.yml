@@ -17,13 +17,17 @@ jobs:
 
     - name: Create New Repository
       id: create_repo
-      uses: peter-evans/create-or-update-repo@v1
+      uses: actions/github-script@v6
       with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        name: ${{ github.event.inputs.project_name }}
-        private: true
-        auto_init: true
-        owner: javid1e
+        script: |
+          const projectName = '${{ github.event.inputs.project_name }}';
+          const response = await github.repos.createInOrg({
+            org: 'javid1e',
+            name: projectName,
+            private: true,
+            auto_init: true
+          });
+          core.setOutput('repository_url', response.data.clone_url);
 
     - name: Clone Template Repository
       run: |
