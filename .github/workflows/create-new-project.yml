@@ -1,62 +1,64 @@
-name: Create New Project
+name: Create New Project Repository
 
 on:
   workflow_dispatch:
     inputs:
       project_name:
-        description: 'Name of the new project'
+        description: 'The name of the new project'
         required: true
 
 jobs:
-  create-new-project:
+  create-repo:
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v2
 
-    - name: Create New Repository
-      id: create_repo
-      uses: actions/github-script@v6
-      with:
-        script: |
-          const projectName = '${{ github.event.inputs.project_name }}';
-          const response = await github.rest.repos.createInOrg({
-            org: 'javid1e',
-            name: projectName,
-            private: true,
-            auto_init: true
-          });
-          core.setOutput('repository_url', response.data.clone_url);
+      - name: Create new repository
+        id: create_repo
+        uses: peter-evans/create-or-update-repo@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          repository: javid1e/${{ github.event.inputs.project_name }}
+          private: false
+          description: 'Repository for ${{ github.event.inputs.project_name }}'
 
-    - name: Clone Template Repository
-      run: |
-        git clone --bare https://github.com/javid1e/full_django_nextjs_dockerize_template.git
-        cd full_django_nextjs_dockerize_template.git
-        git push --mirror https://github.com/javid1e/${{ github.event.inputs.project_name }}.git
+      - name: Set up git
+        run: |
+          git config --global user.email "abdollah.promail@gmail.com"
+          git config --global user.name "Abdollah Mohebbi"
 
-    - name: Checkout New Repository
-      run: |
-        git clone https://github.com/javid1e/${{ github.event.inputs.project_name }}.git
-        cd ${{ github.event.inputs.project_name }}
+      - name: Add frontend submodule
+        run: |
+          git clone https://github.com/javid1e/${{ github.event.inputs.project_name }}.git
+          cd ${{ github.event.inputs.project_name }}
+          git checkout -b frontend
+          git submodule add -b frontend https://github.com/javid1e/full_frontend_nextjs_shadcn_template.git ${{ github.event.inputs.project_name }}_frontend
+          git commit -m "Add frontend submodule"
+          git push --set-upstream origin frontend
 
-    - name: Setup Frontend Branch
-      run: |
-        git checkout -b frontend
-        git submodule add -b main https://github.com/javid1e/full_frontend_nextjs_shadcn_template.git ${{ github.event.inputs.project_name }}_frontend
-        git commit -am "Add frontend submodule"
-        git push origin frontend
+      - name: Add backend submodule
+        run: |
+          cd ${{ github.event.inputs.project_name }}
+          git checkout -b backend
+          git submodule add -b backend https://github.com/javid1e/full_backend_django_rest_template.git ${{ github.event.inputs.project_name }}_backend
+          git commit -m "Add backend submodule"
+          git push --set-upstream origin backend
 
-    - name: Setup Backend Branch
-      run: |
-        git checkout -b backend
-        git submodule add -b main https://github.com/javid1e/full_backend_django_rest_template.git ${{ github.event.inputs.project_name }}_backend
-        git commit -am "Add backend submodule"
-        git push origin backend
+      - name: Add dockerize submodule
+        run: |
+          cd ${{ github.event.inputs.project_name }}
+          git checkout -b dockerize
+          git submodule add -b dockerize https://github.com/javid1e/full_dockerize_django_nextjs_template.git ${{ github.event.inputs.project_name }}_dockerize
+          git commit -m "Add dockerize submodule"
+          git push --set-upstream origin dockerize
 
-    - name: Setup Dockerize Branch
-      run: |
-        git checkout -b dockerize
-        git submodule add -b main https://github.com/javid1e/full_dockerize_django_nextjs_template.git ${{ github.event.inputs.project_name }}_dockerize
-        git commit -am "Add dockerize submodule"
-        git push origin dockerize
+      - name: Push changes to main branch
+        run: |
+          cd ${{ github.event.inputs.project_name }}
+          git checkout main
+          git merge frontend --allow-unrelated-histories
+          git merge backend --allow-unrelated-histories
+          git merge dockerize --allow-unrelated-histories
+          git commit -m "Merge all branches"
+          git push
