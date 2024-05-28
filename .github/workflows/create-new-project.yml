@@ -21,7 +21,7 @@ jobs:
       with:
         script: |
           const projectName = '${{ github.event.inputs.project_name }}';
-          const response = await github.repos.createInOrg({
+          const response = await github.rest.repos.createInOrg({
             org: 'javid1e',
             name: projectName,
             private: true,
